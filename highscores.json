@@ -1,0 +1,37 @@
+[
+    {
+        "mode": "Accuracy Streak",
+        "wpm": 11.3,
+        "accuracy": 100.0,
+        "score": 300,
+        "date": "2026-10-04 11:46"
+    },
+    {
+        "mode": "Time Attack",
+        "wpm": 16.7,
+        "accuracy": 100.0,
+        "score": 167,
+        "date": "2026-10-04 11:45"
+    },
+    {
+        "mode": "Time Attack",
+        "wpm": 14.7,
+        "accuracy": 100.0,
+        "score": 147,
+        "date": "2026-10-04 11:44"
+    },
+    {
+        "mode": "Time Attack",
+        "wpm": 13.1,
+        "accuracy": 100.0,
+        "score": 131,
+        "date": "2026-10-04 11:59"
+    },
+    {
+        "mode": "Accuracy Streak",
+        "wpm": 0.0,
+        "accuracy": 0.0,
+        "score": 0,
+        "date": "2026-10-04 15:55"
+    }
+]

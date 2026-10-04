@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typing Sprint | Falling Words Velocity Challenge</title>
+  <meta name="description" content="Test your typing speed against falling words before they hit the laser barrier. Features programming terms, Roman Urdu, custom lists, and interactive WPM history charts.">
+  <meta name="keywords" content="typing sprint, falling words, typing game, wpm test, programming words, roman urdu typing, speed typing">
+  
+  <!-- Modern Typography from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Outfit:wght@500;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Cyber Background Grid -->
+  <div class="cyber-grid-bg"></div>
+
+  <div class="app-wrapper">
+    <!-- Top Global Header -->
+    <header class="app-header" role="banner">
+      <div class="brand-section">
+        <div class="brand-icon-badge" aria-hidden="true">
+          <!-- Logo image with SVG fallback -->
+          <img src="assets/logo.jpg" alt="Typing Sprint Logo" class="brand-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <svg viewBox="0 0 24 24" style="display:none;">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title" id="app-title">TYPING SPRINT</h1>
+        </div>
+        <span class="brand-tag" id="active-list-badge">PROGRAMMING</span>
+      </div>
+
+      <!-- Live Game HUD Dashboard -->
+      <div class="hud-dashboard" id="game-hud" aria-label="Live Game Stats">
+        <div class="hud-stat">
+          <span class="hud-label">WPM</span>
+          <span class="hud-value highlight-cyan" id="hud-wpm">0</span>
+        </div>
+        <div class="hud-stat">
+          <span class="hud-label">ACCURACY</span>
+          <span class="hud-value" id="hud-accuracy">100%</span>
+        </div>
+        <div class="hud-stat">
+          <span class="hud-label">COMBO</span>
+          <span class="hud-value highlight-streak" id="hud-streak">0x</span>
+        </div>
+        <div class="hud-stat">
+          <span class="hud-label">SCORE</span>
+          <span class="hud-value highlight-gold" id="hud-score">0</span>
+        </div>
+        <div class="hud-stat">
+          <span class="hud-label">SHIELDS</span>
+          <div class="lives-indicator" id="hud-lives" aria-label="Remaining shields">
+            <span class="life-pip"></span>
+            <span class="life-pip"></span>
+            <span class="life-pip"></span>
+            <span class="life-pip"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Header Action Buttons -->
+      <div class="header-actions">
+        <button class="btn-icon" id="btn-sound-toggle" title="Toggle Sound FX (Hot key: M)" aria-label="Toggle Sound">
+          <!-- Audio On SVG -->
+          <svg class="icon-audio-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+        </button>
+
+        <button class="btn-pill" id="btn-open-history" title="View WPM Velocity Chart" aria-label="Open History Chart">
+          <!-- Line Chart SVG -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          <span>History Chart</span>
+        </button>
+
+        <button class="btn-icon" id="btn-open-settings" title="Game Settings & Word Lists" aria-label="Open Settings">
+          <!-- Sliders / Settings SVG -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="21" x2="4" y2="14"></line>
+            <line x1="4" y1="10" x2="4" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12" y2="3"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line>
+            <line x1="20" y1="12" x2="20" y2="3"></line>
+            <line x1="1" y1="14" x2="7" y2="14"></line>
+            <line x1="9" y1="8" x2="15" y2="8"></line>
+            <line x1="17" y1="16" x2="23" y2="16"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Game Arena -->
+    <main class="game-arena" id="arena-container" role="main">
+      <!-- Particle Effects Layer -->
+      <canvas class="particle-canvas" id="particle-canvas"></canvas>
+
+      <!-- Laser Baseline Barrier (Collision zone at bottom) -->
+      <div class="laser-baseline" id="laser-baseline"></div>
+
+      <!-- Bottom Typing Feedback Bar -->
+      <div class="bottom-bar">
+        <div class="typing-input-display">
+          <span class="input-prompt-label">TARGET LOCKED:</span>
+          <div class="typing-box" id="typing-box">
+            <span class="current-target" id="live-target-text"></span>
+            <span class="cursor-caret" id="typing-caret"></span>
+            <span class="placeholder-msg" id="live-placeholder">Type words as they fall...</span>
+          </div>
+        </div>
+
+        <div class="arena-controls-hint">
+          <span><span class="key-tag">ESC</span> Pause</span>
+          <span><span class="key-tag">BKSP</span> Cancel Target</span>
+          <span><span class="key-tag">M</span> Sound</span>
+        </div>
+      </div>
+
+      <!-- START / READY OVERLAY SCREEN -->
+      <div class="overlay-screen" id="start-overlay">
+        <div class="start-hero-card">
+          <div class="hero-badge-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            VELOCITY ARCADE
+          </div>
+          <h2>Type Before They Crash</h2>
+          <p class="hero-subtitle">
+            Words cascade toward the laser barrier. Lock on by typing the first letter and eliminate them for multipliers and power-ups!
+          </p>
+
+          <!-- Quick Selectors: Word List & Difficulty -->
+          <div class="quick-selectors">
+            <div>
+              <div class="selector-group-label">Select Word List</div>
+              <div class="pill-group" id="quick-wordlist-pills">
+                <button class="select-pill active" data-list="programming">💻 Programming</button>
+                <button class="select-pill" data-list="romanUrdu">🌙 Roman Urdu</button>
+                <button class="select-pill" data-list="english">⚡ English Core</button>
+                <button class="select-pill" data-list="cyberpunk">🚀 Cyberpunk</button>
+                <button class="select-pill" data-list="custom">✍️ Custom List</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="selector-group-label">Select Difficulty</div>
+              <div class="pill-group" id="quick-difficulty-pills">
+                <button class="select-pill" data-diff="relaxed">Relaxed</button>
+                <button class="select-pill active" data-diff="normal">Standard</button>
+                <button class="select-pill" data-diff="sprint">Sprint (Hard)</button>
+                <button class="select-pill" data-diff="nightmare">Nightmare</button>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-cta" id="btn-start-game">
+            <span>PRESS SPACEBAR OR ENTER TO SPRINT</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- PAUSE OVERLAY SCREEN -->
+      <div class="overlay-screen hidden" id="pause-overlay">
+        <div class="pause-card">
+          <div class="hero-badge-title">STANDBY</div>
+          <h2>Sprint Paused</h2>
+          <p class="hero-subtitle">Catch your breath. Press <span class="key-tag">ESC</span> or click below to resume your velocity run.</p>
+          <div style="display:flex; gap:14px; margin-top:10px;">
+            <button class="btn-cta" id="btn-resume-game">Resume Sprint</button>
+            <button class="btn-secondary" id="btn-restart-from-pause">Restart</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GAME OVER SUMMARY OVERLAY SCREEN -->
+      <div class="overlay-screen hidden" id="gameover-overlay">
+        <div class="gameover-card">
+          <div class="gameover-badge">BREACH DETECTED</div>
+          <h2>Sprint Terminated</h2>
+          
+          <div class="stats-grid">
+            <div class="stat-cell highlight-cyan">
+              <span class="cell-label">FINAL WPM</span>
+              <span class="cell-value" id="res-wpm">0</span>
+            </div>
+            <div class="stat-cell highlight-cyan">
+              <span class="cell-label">PEAK WPM</span>
+              <span class="cell-value" id="res-peak-wpm">0</span>
+            </div>
+            <div class="stat-cell">
+              <span class="cell-label">ACCURACY</span>
+              <span class="cell-value" id="res-accuracy">0%</span>
+            </div>
+            <div class="stat-cell highlight-gold">
+              <span class="cell-label">WORDS CLEARED</span>
+              <span class="cell-value" id="res-cleared">0</span>
+            </div>
+            <div class="stat-cell highlight-magenta">
+              <span class="cell-label">BEST STREAK</span>
+              <span class="cell-value" id="res-streak">0</span>
+            </div>
+            <div class="stat-cell highlight-gold">
+              <span class="cell-label">TOTAL SCORE</span>
+              <span class="cell-value" id="res-score">0</span>
+            </div>
+          </div>
+
+          <div class="gameover-actions">
+            <button class="btn-cta" id="btn-play-again">Play Again (Enter / Space)</button>
+            <button class="btn-secondary" id="btn-view-chart-from-gameover">View WPM Chart</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== HISTORY & WPM CHART MODAL ==================== -->
+  <div class="modal-backdrop" id="modal-history" role="dialog" aria-modal="true" aria-labelledby="history-modal-title">
+    <div class="modal-dialog large">
+      <div class="modal-header">
+        <h3 id="history-modal-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary-cyan)" stroke-width="2.5">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          WPM Velocity Over Time
+        </h3>
+        <button class="modal-close-btn" id="btn-close-history" aria-label="Close modal">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Filter Controls -->
+        <div class="history-filter-bar">
+          <div class="selector-group-label">Timeline Range</div>
+          <div class="pill-group" id="chart-filter-pills">
+            <button class="select-pill" data-range="10">Last 10</button>
+            <button class="select-pill" data-range="25">Last 25</button>
+            <button class="select-pill" data-range="50">Last 50</button>
+            <button class="select-pill active" data-range="all">All Runs</button>
+          </div>
+        </div>
+
+        <!-- High-DPI Canvas Chart Container -->
+        <div class="chart-container-card">
+          <canvas class="chart-canvas" id="wpm-chart-canvas"></canvas>
+          <div class="chart-tooltip" id="chart-tooltip"></div>
+        </div>
+
+        <!-- All-Time KPI Summary Row -->
+        <div class="history-summary-row">
+          <div class="history-stat-mini">
+            <div class="label">Personal Best</div>
+            <div class="val" id="hist-best-wpm" style="color:var(--primary-cyan)">0 WPM</div>
+          </div>
+          <div class="history-stat-mini">
+            <div class="label">Average WPM</div>
+            <div class="val" id="hist-avg-wpm" style="color:var(--accent-gold)">0 WPM</div>
+          </div>
+          <div class="history-stat-mini">
+            <div class="label">Total Words Typed</div>
+            <div class="val" id="hist-total-words">0</div>
+          </div>
+          <div class="history-stat-mini">
+            <div class="label">Runs Logged</div>
+            <div class="val" id="hist-total-runs">0</div>
+          </div>
+        </div>
+
+        <!-- History Sessions Log Table -->
+        <div>
+          <div class="selector-group-label" style="margin-bottom: 8px;">Recent Sprint Sessions</div>
+          <div class="history-table-container">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Difficulty</th>
+                  <th>Word List</th>
+                  <th>WPM</th>
+                  <th>Accuracy</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody id="history-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-export-history" style="flex:none">Export Data (JSON)</button>
+        <button class="btn-secondary" id="btn-clear-history" style="flex:none; color:var(--accent-danger)">Clear History</button>
+        <button class="btn-pill" id="btn-done-history" style="background:var(--primary-cyan); color:var(--bg-deep)">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SETTINGS MODAL ==================== -->
+  <div class="modal-backdrop" id="modal-settings" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+    <div class="modal-dialog medium">
+      <div class="modal-header">
+        <h3 id="settings-modal-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary-cyan)" stroke-width="2.5">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          Sprint Configuration
+        </h3>
+        <button class="modal-close-btn" id="btn-close-settings" aria-label="Close modal">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Difficulty Selection -->
+        <div class="settings-section">
+          <div class="settings-section-title">Difficulty Presets</div>
+          <div class="settings-grid-options" id="settings-difficulty-options">
+            <div class="setting-option-card" data-diff="relaxed">
+              <div class="card-title">Relaxed <span style="color:#00f5d4">●</span></div>
+              <div class="card-desc">Gentle speed, 5 shields, slow waves. Ideal for warming up.</div>
+            </div>
+            <div class="setting-option-card active" data-diff="normal">
+              <div class="card-title">Standard <span style="color:#3a86ff">●</span></div>
+              <div class="card-desc">Balanced arcade tempo, 4 shields, 1.5x score bonus.</div>
+            </div>
+            <div class="setting-option-card" data-diff="sprint">
+              <div class="card-title">Sprint (Hard) <span style="color:#ff007a">●</span></div>
+              <div class="card-desc">Fast velocity, rapid spawns, 3 shields, 2.2x score bonus.</div>
+            </div>
+            <div class="setting-option-card" data-diff="nightmare">
+              <div class="card-title">Nightmare <span style="color:#ffbe0b">●</span></div>
+              <div class="card-desc">Relentless speed, 2 shields, high risk, 3.5x score.</div>
+            </div>
+            <div class="setting-option-card" data-diff="custom" style="grid-column: span 2">
+              <div class="card-title">Custom Sliders <span style="color:#c77dff">●</span></div>
+              <div class="card-desc">Tune your own falling velocity, spawn rates, and shields.</div>
+            </div>
+          </div>
+
+          <!-- Custom Sliders Box (Only if Custom difficulty selected) -->
+          <div id="custom-sliders-box" style="display:none; margin-top:8px; padding:12px; background:rgba(0,0,0,0.3); border-radius:8px; display:flex; flex-direction:column; gap:12px;">
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>Falling Velocity Multiplier</span>
+                <span id="slider-speed-val">1.6x</span>
+              </div>
+              <input type="range" class="custom-range" id="slider-speed" min="0.6" max="4.0" step="0.2" value="1.6">
+            </div>
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>Spawn Interval</span>
+                <span id="slider-spawn-val">2.0s</span>
+              </div>
+              <input type="range" class="custom-range" id="slider-spawn" min="0.8" max="4.0" step="0.2" value="2.0">
+            </div>
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>Shield Count (Lives)</span>
+                <span id="slider-lives-val">4</span>
+              </div>
+              <input type="range" class="custom-range" id="slider-lives" min="1" max="10" step="1" value="4">
+            </div>
+          </div>
+        </div>
+
+        <!-- Word List Repository -->
+        <div class="settings-section">
+          <div class="settings-section-title">Word List Repository</div>
+          <div class="settings-grid-options" id="settings-wordlist-options">
+            <div class="setting-option-card active" data-list="programming">
+              <div class="card-title">💻 Programming</div>
+              <div class="card-desc">Algorithms, JavaScript, Python, async, loops, syntax.</div>
+            </div>
+            <div class="setting-option-card" data-list="romanUrdu">
+              <div class="card-title">🌙 Roman Urdu</div>
+              <div class="card-desc">Everyday, poetic & cultural Urdu words in Roman script.</div>
+            </div>
+            <div class="setting-option-card" data-list="english">
+              <div class="card-title">⚡ English Core</div>
+              <div class="card-desc">Diverse high-frequency vocabulary and swift terms.</div>
+            </div>
+            <div class="setting-option-card" data-list="cyberpunk">
+              <div class="card-title">🚀 Cyberpunk</div>
+              <div class="card-desc">Futuristic tech, matrix, neon, neural, synaptic words.</div>
+            </div>
+            <div class="setting-option-card" data-list="custom" style="grid-column: span 2">
+              <div class="card-title">✍️ Your Own Custom List</div>
+              <div class="card-desc">Paste, load, or type custom word dictionaries directly.</div>
+            </div>
+          </div>
+
+          <!-- Custom Words Textarea -->
+          <div class="custom-words-box" id="custom-words-editor" style="display:none; margin-top:8px;">
+            <textarea id="custom-words-textarea" placeholder="Paste your custom words separated by commas, spaces, or lines (e.g. react, redux, typescript, vite, nextjs)..."></textarea>
+            <div class="custom-words-footer">
+              <span id="custom-word-count-badge">0 words loaded</span>
+              <div class="preset-chip-group">
+                <span class="preset-chip" id="preset-load-web">Load Web Dev</span>
+                <span class="preset-chip" id="preset-load-urdu">Load Urdu Poetry</span>
+                <span class="preset-chip" id="preset-load-science">Load Science</span>
+                <span class="preset-chip" id="preset-clear-words">Clear</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audio & Effects -->
+        <div class="settings-section">
+          <div class="settings-section-title">Feedback & Effects</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>Sound Synthesizer Volume</span>
+                <span id="slider-vol-val">60%</span>
+              </div>
+              <input type="range" class="custom-range" id="slider-volume" min="0" max="1" step="0.05" value="0.6">
+            </div>
+            <div style="display:flex; flex-direction:column; justify-content:center; gap:8px;">
+              <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer;">
+                <input type="checkbox" id="check-screen-shake" checked style="accent-color:var(--primary-cyan)">
+                <span>Screen Shake on Miss/Explosion</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer;">
+                <input type="checkbox" id="check-sound-enabled" checked style="accent-color:var(--primary-cyan)">
+                <span>Synthesizer Audio Enabled</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-pill" id="btn-save-settings" style="background:var(--primary-cyan); color:var(--bg-deep)">Save & Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main JavaScript App Entry -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
